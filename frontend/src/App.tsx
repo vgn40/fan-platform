@@ -1,35 +1,19 @@
-import { useEffect, useState } from "react";
-
-type Match = {
-  id: number;
-  home: string;
-  away: string;
-  veo_id?: string | null;
-};
+import { useMatches } from "./hooks/useMatches";
 
 export default function App() {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const { data: matches, loading, error } = useMatches();
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/matches")
-      .then(r => r.json())
-      .then(setMatches)
-      .catch(console.error);
-  }, []);
+  if (loading) return <p style={{ padding: "2rem" }}>Henter kampe …</p>;
+  if (error)   return <p style={{ padding: "2rem" }}>Fejl: {`${error}`}</p>;
 
   return (
     <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
       <h1>Kampe</h1>
-
-      {matches.length === 0 ? (
-        <p>Henter kampe …</p>
-      ) : (
-        matches.map(m => (
-          <p key={m.id}>
-            {m.home} vs {m.away}
-          </p>
-        ))
-      )}
+      {matches.map(m => (
+        <p key={m.id}>
+          {m.home} vs {m.away}
+        </p>
+      ))}
     </main>
   );
 }
