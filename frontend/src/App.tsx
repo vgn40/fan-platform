@@ -1,19 +1,38 @@
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import MatchPage from "./pages/MatchPage";
 import { useMatches } from "./hooks/useMatches";
 
 export default function App() {
-  const { data: matches, loading, error } = useMatches();
-
-  if (loading) return <p style={{ padding: "2rem" }}>Henter kampe …</p>;
-  if (error)   return <p style={{ padding: "2rem" }}>Fejl: {`${error}`}</p>;
+  const matches = useMatches();
 
   return (
-    <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <h1>Kampe</h1>
-      {matches.map(m => (
-        <p key={m.id}>
-          {m.home} vs {m.away}
-        </p>
-      ))}
-    </main>
+    <BrowserRouter>
+      <Routes>
+        {/* Forsiden med kamp-listen */}
+        <Route
+          path="/"
+          element={
+            <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
+              <h1>Kampe</h1>
+
+              {matches.length === 0 ? (
+                <p>Henter kampe …</p>
+              ) : (
+                matches.map(m => (
+                  <p key={m.id}>
+                    <Link to={`/match/${m.id}`}>
+                      {m.home} vs {m.away}
+                    </Link>
+                  </p>
+                ))
+              )}
+            </main>
+          }
+        />   {/* ← det var denne "/>" der manglede */}
+
+        {/* Detaljeside for én kamp */}
+        <Route path="match/:id" element={<MatchPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

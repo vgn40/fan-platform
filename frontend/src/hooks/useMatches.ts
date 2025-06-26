@@ -1,25 +1,21 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 
-export type Match = {
+export interface Match {
   id: number;
   home: string;
   away: string;
-  veo_id?: string | null;
-};
+  veo_id: string | null;
+}
 
 export function useMatches() {
-  const [data, setData]   = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
 
   useEffect(() => {
-    axios
-      .get<Match[]>("http://127.0.0.1:8000/matches")
-      .then(res => setData(res.data))
-      .catch(setError)
-      .finally(() => setLoading(false));
+    fetch("http://127.0.0.1:8000/matches")
+      .then(r => r.json())
+      .then(setMatches)
+      .catch(console.error);
   }, []);
 
-  return { data, loading, error };
+  return matches;
 }
