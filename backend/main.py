@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware   # ← CORS-importen
 from pydantic import BaseModel
+
+
 
 # --------------------------------------------------
 # Opret API-appen
@@ -36,7 +38,13 @@ class Match(BaseModel):
 # Dummy-data
 # --------------------------------------------------
 DUMMY = [
-    Match(id=1, home="Aabybro IF", away="B52 Aalborg", veo_id="123abc")
+    Match(
+        id=1,
+        home="Aabybro IF",
+        away="B52 Aalborg",
+        # ← erstat “rigtigt-veo-id” med det, du kopierer fra VEO-embed-linket
+        veo_id="rigtigt-veo-id"
+    )
 ]
 
 # --------------------------------------------------
@@ -46,3 +54,10 @@ DUMMY = [
 async def get_matches():
     """Returnér en liste af fiktive kampe (MVP-demo)."""
     return DUMMY
+@app.get("/matches/{match_id}", response_model=Match)
+async def get_match(match_id: int):
+    """Returnér én kamp baseret på id."""
+    for m in DUMMY:
+        if m.id == match_id:
+            return m
+    raise HTTPException(status_code=404, detail="Match not found")
