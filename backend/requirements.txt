@@ -1,3 +1,6 @@
 fastapi~=0.111
 uvicorn[standard]~=0.29
 pydantic~=2.7
+sqlmodel[sqlite]  # <-- tilføj
+python-dotenv
+"sqlmodel[sqlite]"  # <-- tilføj

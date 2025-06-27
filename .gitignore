@@ -55,3 +55,8 @@ db.sqlite3
 
 # Logs
 logs/
+# --- fan-platform (backend) ---
+.env
+fan.db
+*.sqlite3
+__pycache__/
