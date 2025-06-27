@@ -1,4 +1,10 @@
-# backend/models.py
+"""
+backend/models.py
+──────────────────
+SQLModel-tabellen (Match) + de to Pydantic-schemas der bruges til
+opret (MatchCreate) og patch/update (MatchUpdate).
+"""
+
 from typing import Optional
 
 from sqlmodel import SQLModel, Field
@@ -15,11 +21,12 @@ class Match(MatchBase, table=True):
 
 
 class MatchCreate(MatchBase):
+    """Request-body når der POST’es /matches (alle felter krævet)."""
     pass
 
 
 class MatchUpdate(SQLModel):
-    #  ➜ alle felter valgfrie ⇒ perfekt til PATCH
+    """PATCH/PUT – alle felter valgfrie ⇒ send kun det du vil ændre."""
     home: Optional[str] = None
     away: Optional[str] = None
     veo_id: Optional[str] = None

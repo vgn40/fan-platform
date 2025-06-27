@@ -1,29 +1,40 @@
-# backend/seed.py
+"""
+backend/seed.py
+———————————————
+Fylder SQLite-databasen med et sæt tilfældige dummy-kampe,
+så du kan teste infinite-scroll i frontenden.
+
+Brug:
+
+    $ source .venv/bin/activate
+    $ python backend/seed.py
+"""
+
 import random
 from typing import List
-from sqlmodel import SQLModel, Session, create_engine
 
-# ----- konfig-variabler -----
-DB_FILE      = "sqlite:///./fan.db"      # sti skal matche din prod.db hvis du bruger en anden!
-NUM_MATCHES  = 50                        # hvor mange tilfældige kampe vil du lave?
-TEAM_NAMES   = [
+from sqlmodel import Session
+from db import engine           # ← genbrug samme engine som resten af app’en
+from models import Match        # din SQLModel-tabel
+
+# ── justér tal/navne hvis du har lyst ───────────────────────────────────────
+NUM_MATCHES = 50
+TEAM_NAMES  = [
     "Aabybro IF", "B52 Aalborg", "BK Skjold", "Vigerslev BK", "Deflottefyre",
     "FC Sunshine", "IF Stjernerne", "Galactic FC", "AC Pandas", "Hørsholm 79ers",
 ]
+# ────────────────────────────────────────────────────────────────────────────
 
-# ---------------------------------------------------------------
-from models import Match  # <- din eksisterende SQLModel‐klasse
-
-engine = create_engine(DB_FILE, echo=False)
-SQLModel.metadata.create_all(engine)     # sikkerhed: opret tabeller hvis de ikke findes
 
 def random_matches(n: int) -> List[Match]:
-    matches = []
+    """Returnerer n Match-objekter (endnu ikke gemt i DB)."""
+    matches: list[Match] = []
     for _ in range(n):
         home, away = random.sample(TEAM_NAMES, 2)
-        veo_id     = random.choice([None, "string", str(random.randint(10000, 99999))])
+        veo_id     = random.choice([None, "string", str(random.randint(10_000, 99_999))])
         matches.append(Match(home=home, away=away, veo_id=veo_id))
     return matches
+
 
 if __name__ == "__main__":
     with Session(engine) as session:
