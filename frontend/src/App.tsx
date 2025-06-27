@@ -1,40 +1,28 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
-import MatchPage from "./pages/MatchPage";
-import NewMatchPage from "./pages/NewMatchPage";
-import MatchDetailPage from "./pages/MatchDetailPage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+import MatchPage from "./pages/MatchesPage";
+import MatchDetailPage from "./pages/MatchDetailPage";
+import NewMatchPage from "./pages/NewMatchPage";
+import EditMatchPage from "./pages/EditMatchPage";
+
+/**
+ * Top-level router.
+ */
 export default function App() {
   return (
     <BrowserRouter>
-      {/* simpel top-nav */}
-      <nav className="p-4 bg-neutral-900 border-b border-neutral-800 text-sm">
-        <div className="max-w-3xl mx-auto flex gap-6">
-          <Link to="/matches" className="hover:underline">
-            Kampe
-          </Link>
-          <Link to="/matches/new" className="hover:underline">
-            Opret kamp
-          </Link>
-        </div>
-      </nav>
-
       <Routes>
-        <Route path="/" element={<Navigate to="/matches" />} />
+        {/* redirect fra roden */}
+        <Route path="/" element={<Navigate to="/matches" replace />} />
+
+        {/* CRUD-ruter */}
         <Route path="/matches" element={<MatchPage />} />
         <Route path="/matches/new" element={<NewMatchPage />} />
         <Route path="/matches/:id" element={<MatchDetailPage />} />
+        <Route path="/matches/:id/edit" element={<EditMatchPage />} />
+
         {/* fallback */}
-        <Route
-          path="*"
-          element={
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">404 – Siden findes ikke</h1>
-              <Link to="/" className="text-blue-500 hover:underline">
-                Til forsiden
-              </Link>
-            </div>
-          }
-        />
+        <Route path="*" element={<p className="p-4">404 – siden findes ikke</p>} />
       </Routes>
     </BrowserRouter>
   );
