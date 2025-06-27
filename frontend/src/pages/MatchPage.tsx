@@ -1,37 +1,67 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import type { Match } from "../hooks/useMatches";
+import { Link } from "react-router-dom";
+
+type Match = { id: number; home: string; away: string; veo_id?: string | null };
 
 export default function MatchPage() {
-  const { id } = useParams();                // ← "1" fra /match/1
-  const [match, setMatch] = useState<Match | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/matches/${id}`)
-      .then(r => r.json())
-      .then(setMatch)
-      .catch(console.error);
-  }, [id]);
+    async function fetchMatches() {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API}/matches`);
+        if (!res.ok) throw new Error(await res.text());
+        setMatches(await res.json());
+      } catch (err: any) {
+        setError(err.message ?? "Ukendt fejl");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMatches();
+  }, []);
 
-  if (!match) return <p style={{ padding: "2rem" }}>Indlæser …</p>;
+  if (loading) return <p className="p-6">Indlæser…</p>;
+  if (error) return <p className="p-6 text-red-600">Fejl: {error}</p>;
 
   return (
-    <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <Link to="/">← Tilbage</Link>
-      <h1>{match.home} vs {match.away}</h1>
+    <div className="mx-auto max-w-3xl p-6 space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold">Kampe</h1>
+        <Link to="/matches/new" className="text-blue-500 hover:underline">
+          Opret kamp
+        </Link>
+      </header>
 
-      {match.veo_id ? (
-        <iframe
-          title="VEO-video"
-          src={`https://app.veo.co/embed/${match.veo_id}`}
-          width="100%"
-          height="480"
-          allowFullScreen
-          style={{ border: 0, marginTop: "1rem" }}
-        />
-      ) : (
-        <p>Ingen video endnu.</p>
-      )}
-    </main>
+      <table className="w-full text-left border-separate border-spacing-y-1">
+        <thead className="text-neutral-400 text-sm">
+          <tr>
+            <th>#</th>
+            <th>Hjemme</th>
+            <th>Ude</th>
+            <th>Veo-ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {matches.map((m, idx) => (
+            <tr key={m.id} className="hover:bg-neutral-800 rounded">
+              <td className="pr-4 py-1">{idx}</td>
+              <td className="pr-4 py-1">
+                <Link
+                  to={`/matches/${m.id}`}
+                  className="text-blue-400 hover:underline"
+                >
+                  {m.home}
+                </Link>
+              </td>
+              <td className="pr-4 py-1">{m.away}</td>
+              <td className="pr-4 py-1">{m.veo_id ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

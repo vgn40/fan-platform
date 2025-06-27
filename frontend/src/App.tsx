@@ -1,64 +1,40 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import MatchPage from "./pages/MatchPage";
-import { useMatches } from "./hooks/useMatches";
 import NewMatchPage from "./pages/NewMatchPage";
+import MatchDetailPage from "./pages/MatchDetailPage";
 
 export default function App() {
-  const matches = useMatches();
-
   return (
     <BrowserRouter>
-    
+      {/* simpel top-nav */}
+      <nav className="p-4 bg-neutral-900 border-b border-neutral-800 text-sm">
+        <div className="max-w-3xl mx-auto flex gap-6">
+          <Link to="/matches" className="hover:underline">
+            Kampe
+          </Link>
+          <Link to="/matches/new" className="hover:underline">
+            Opret kamp
+          </Link>
+        </div>
+      </nav>
+
       <Routes>
-        {/* Forsiden med kamp-listen */}
+        <Route path="/" element={<Navigate to="/matches" />} />
+        <Route path="/matches" element={<MatchPage />} />
+        <Route path="/matches/new" element={<NewMatchPage />} />
+        <Route path="/matches/:id" element={<MatchDetailPage />} />
+        {/* fallback */}
         <Route
-          path="/"
+          path="*"
           element={
-            <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-              <h1>Kampe</h1>
-
-              {matches.length === 0 ? (
-                <p>Henter kampe …</p>
-              ) : (
-                matches.map(m => (
-                  <p key={m.id}>
-                    <Link to={`/match/${m.id}`}>
-                      {m.home} vs {m.away}
-                    </Link>
-                  </p>
-                ))
-              )}
-            </main>
+            <div className="p-6">
+              <h1 className="text-2xl font-bold">404 – Siden findes ikke</h1>
+              <Link to="/" className="text-blue-500 hover:underline">
+                Til forsiden
+              </Link>
+            </div>
           }
-        />   {/* ← det var denne "/>" der manglede */}
-
-        {/* Detaljeside for én kamp */}
-        <Route path="match/:id" element={<MatchPage />} />
-
-        <Route
-  path="/"
-  element={
-    <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <h1>Kampe</h1>
-
-      <p>
-        <Link to="/new">➕ Ny kamp</Link>
-      </p>
-
-      {matches.length === 0 ? (
-        <p>Henter kampe …</p>
-      ) : (
-        matches.map(m => (
-          <p key={m.id}>
-            <Link to={`/match/${m.id}`}>{m.home} vs {m.away}</Link>
-          </p>
-        ))
-      )}
-    </main>
-  }
-/>
-
-<Route path="new" element={<NewMatchPage />} />
+        />
       </Routes>
     </BrowserRouter>
   );
