@@ -1,93 +1,49 @@
-// src/pages/EditMatchPage.tsx
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useMatch } from "../hooks/useMatch";
+import { useUpdateMatch } from "../hooks/useUpdateMatch";
 
-interface MatchForm {
-  home: string;
-  away: string;
-  veo_id?: string;
-}
+type FormData = { home: string; away: string; veo_id?: string };
 
 export default function EditMatchPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const { id = "" } = useParams();
+  const matchId = Number(id);
+  const nav     = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<MatchForm>();
+  const { data: match, isLoading, error } = useMatch(matchId);
+  const update = useUpdateMatch();
 
-  // hent eksisterende data
+  const { register, handleSubmit, reset } = useForm<FormData>();
+
+  // Når vi får data første gang ⇒ fyld formularen
   useEffect(() => {
-    (async () => {
-      const res = await fetch(`${import.meta.env.VITE_API}/matches/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setValue("home", data.home);
-        setValue("away", data.away);
-        setValue("veo_id", data.veo_id || "");
-      }
-    })();
-  }, [id, setValue]);
+    if (match) reset(match);
+  }, [match, reset]);
 
-  async function onSubmit(data: MatchForm) {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API}/matches/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      navigate(`/matches/${id}`); // tilbage til detaljeside
-    } catch (err) {
-      alert(`Kunne ikke gemme: ${err}`);
-    }
+  if (isLoading) return <p className="p-4">Indlæser…</p>;
+  if (error)     return <p className="p-4 text-red-600">{String(error)}</p>;
+  if (!match)    return null; // burde ikke ske, men for en god ordens skyld
+
+  async function onSubmit(data: FormData) {
+    await update.mutateAsync({ id: matchId, ...data });
+    nav("/matches");
   }
 
   return (
-    <div className="mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-bold mb-4">Redigér kamp</h1>
+    <div className="mx-auto max-w-md p-6 space-y-4">
+      <h1 className="text-2xl font-bold">Redigér kamp</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block font-medium">Hjemmehold</label>
-          <input
-            className="w-full border rounded p-2"
-            {...register("home", { required: "Påkrævet" })}
-          />
-          {errors.home && (
-            <p className="text-red-600 text-sm">{errors.home.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-medium">Udehold</label>
-          <input
-            className="w-full border rounded p-2"
-            {...register("away", { required: "Påkrævet" })}
-          />
-          {errors.away && (
-            <p className="text-red-600 text-sm">{errors.away.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-medium">Veo-ID (valgfrit)</label>
-          <input
-            className="w-full border rounded p-2"
-            {...register("veo_id")}
-          />
-        </div>
+        <input className="w-full border p-2" {...register("home", { required: true })} />
+        <input className="w-full border p-2" {...register("away", { required: true })} />
+        <input className="w-full border p-2" {...register("veo_id")} />
 
         <button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-blue-600 text-white rounded py-2 px-4 hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-600 text-white rounded py-2 px-4 disabled:opacity-50"
+          disabled={update.isPending}
         >
-          {isSubmitting ? "Gemmer…" : "Gem"}
+          {update.isPending ? "Gemmer…" : "Gem"}
         </button>
       </form>
     </div>

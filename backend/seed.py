@@ -1,19 +1,32 @@
 # backend/seed.py
-from sqlmodel import Session, select
-from db import engine, init_db
-from models import Match
+import random
+from typing import List
+from sqlmodel import SQLModel, Session, create_engine
 
-init_db()                      # sørg for at tabellen findes
+# ----- konfig-variabler -----
+DB_FILE      = "sqlite:///./fan.db"      # sti skal matche din prod.db hvis du bruger en anden!
+NUM_MATCHES  = 50                        # hvor mange tilfældige kampe vil du lave?
+TEAM_NAMES   = [
+    "Aabybro IF", "B52 Aalborg", "BK Skjold", "Vigerslev BK", "Deflottefyre",
+    "FC Sunshine", "IF Stjernerne", "Galactic FC", "AC Pandas", "Hørsholm 79ers",
+]
 
-with Session(engine) as s:
-    if not s.exec(select(Match)).first():
-        s.add_all(
-            [
-                Match(home="Aabybro IF", away="B52 Aalborg"),
-                Match(home="bingbong", away="desmartedrenge", veo_id="5421232113"),
-            ]
-        )
-        s.commit()
-        print("SQLite seeded with 2 matches")
-    else:
-        print("Database already has data – nothing inserted")
+# ---------------------------------------------------------------
+from models import Match  # <- din eksisterende SQLModel‐klasse
+
+engine = create_engine(DB_FILE, echo=False)
+SQLModel.metadata.create_all(engine)     # sikkerhed: opret tabeller hvis de ikke findes
+
+def random_matches(n: int) -> List[Match]:
+    matches = []
+    for _ in range(n):
+        home, away = random.sample(TEAM_NAMES, 2)
+        veo_id     = random.choice([None, "string", str(random.randint(10000, 99999))])
+        matches.append(Match(home=home, away=away, veo_id=veo_id))
+    return matches
+
+if __name__ == "__main__":
+    with Session(engine) as session:
+        session.add_all(random_matches(NUM_MATCHES))
+        session.commit()
+    print(f"🥳  Tilføjede {NUM_MATCHES} dummy-kampe til databasen.")
