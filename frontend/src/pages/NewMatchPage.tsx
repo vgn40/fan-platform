@@ -1,81 +1,123 @@
+// -----------------------------------------------------------------------------
+//  NewMatchPage.tsx
+//  Opret ny kamp – med react-hook-form validering
+// -----------------------------------------------------------------------------
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-interface MatchForm {
+type Inputs = {
   home: string;
   away: string;
   veo_id?: string;
-}
+};
 
 export default function NewMatchPage() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<MatchForm>();
+    watch,
+    reset,
+  } = useForm<Inputs>();
 
   const navigate = useNavigate();
 
-  async function onSubmit(data: MatchForm) {
+  // ---------------------------------------------------------------------------
+  //  Submit handler
+  // ---------------------------------------------------------------------------
+  async function onSubmit(data: Inputs) {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API}/matches`, {
+      await fetch(`${import.meta.env.VITE_API}/matches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error(await res.text());
-      navigate("/matches"); // tilbage til oversigten
+      reset();
+      navigate("/matches");
     } catch (err) {
       alert(`Kunne ikke gemme: ${err}`);
     }
   }
 
-  return (
-    <div className="mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-bold mb-4">Opret ny kamp</h1>
+  // Bruges til “home ≠ away” validering
+  const homeValue = watch("home");
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Hjemmehold */}
-        <div>
-          <label className="block font-medium">Hjemmehold</label>
+  // ---------------------------------------------------------------------------
+  //  Render
+  // ---------------------------------------------------------------------------
+  return (
+    <main className="mx-auto max-w-md p-6 space-y-8">
+      <Link to="/matches" className="text-blue-400 hover:underline">
+        ← Tilbage
+      </Link>
+
+      <h1 className="text-3xl font-bold">Opret ny kamp</h1>
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 bg-zinc-800 rounded-xl p-6 shadow"
+      >
+        {/* HOME -------------------------------------------------------------- */}
+        <div className="space-y-2">
+          <label className="block font-medium">Hjemmehold *</label>
           <input
-            className="w-full border rounded p-2"
-            {...register("home", { required: "Påkrævet" })}
+            {...register("home", {
+              required: "Hjemmehold er påkrævet",
+              validate: (v) =>
+                v !== watch("away") || "Hjemme- og udehold må ikke være ens",
+            })}
+            placeholder="B52 Aalborg"
+            className="w-full rounded-md bg-zinc-900 px-3 py-2"
           />
           {errors.home && (
-            <p className="text-red-600 text-sm">{errors.home.message}</p>
+            <p className="text-sm text-red-400">{errors.home.message}</p>
           )}
         </div>
 
-        {/* Udehold */}
-        <div>
-          <label className="block font-medium">Udehold</label>
+        {/* AWAY -------------------------------------------------------------- */}
+        <div className="space-y-2">
+          <label className="block font-medium">Udehold *</label>
           <input
-            className="w-full border rounded p-2"
-            {...register("away", { required: "Påkrævet" })}
+            {...register("away", {
+              required: "Udehold er påkrævet",
+              validate: (v) =>
+                v !== homeValue || "Hjemme- og udehold må ikke være ens",
+            })}
+            placeholder="AC Pandas"
+            className="w-full rounded-md bg-zinc-900 px-3 py-2"
           />
           {errors.away && (
-            <p className="text-red-600 text-sm">{errors.away.message}</p>
+            <p className="text-sm text-red-400">{errors.away.message}</p>
           )}
         </div>
 
-        {/* Veo-ID */}
-        <div>
-          <label className="block font-medium">Veo-ID (valgfrit)</label>
+        {/* VEO ID ------------------------------------------------------------ */}
+        <div className="space-y-2">
+          <label className="block font-medium">Veo-ID (valgfri)</label>
           <input
-            className="w-full border rounded p-2"
-            {...register("veo_id")}
+            {...register("veo_id", {
+              pattern: {
+                value: /^\d*$/,
+                message: "Veo-ID skal være et tal",
+              },
+            })}
+            placeholder="fx 37453"
+            className="w-full rounded-md bg-zinc-900 px-3 py-2"
           />
+          {errors.veo_id && (
+            <p className="text-sm text-red-400">{errors.veo_id.message}</p>
+          )}
         </div>
 
+        {/* SUBMIT ------------------------------------------------------------ */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-blue-600 text-white rounded py-2 px-4 hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-md bg-blue-600 py-2 font-semibold text-white shadow hover:bg-blue-500 disabled:opacity-50"
         >
-          {isSubmitting ? "Gemmer…" : "Gem"}
+          {isSubmitting ? "Gemmer…" : "Gem kamp"}
         </button>
       </form>
-    </div>
+    </main>
   );
 }

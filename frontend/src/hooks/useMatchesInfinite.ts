@@ -9,17 +9,17 @@ export type Match = {
   veo_id?: string | null;
 };
 
-export function useMatches() {
+export function useMatchesInfinite() {
   return useInfiniteQuery<Match[], Error>({
     queryKey: ["matches"],
     queryFn: ({ pageParam = 0 }) =>
       fetch(
         `${import.meta.env.VITE_API}/matches?skip=${pageParam}&limit=${PAGE_SIZE}`
-      ).then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
+      ).then((r) => {
+        if (!r.ok) throw new Error("Kunne ikke hente kampe");
         return r.json() as Promise<Match[]>;
       }),
-    getNextPageParam: (lastPage, allPages) =>
-      lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined,
+    getNextPageParam: (last, all) =>
+      last.length === PAGE_SIZE ? all.length * PAGE_SIZE : undefined,
   });
 }

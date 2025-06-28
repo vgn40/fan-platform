@@ -1,95 +1,55 @@
-// src/pages/EditMatchPage.tsx
-import { useEffect } from "react";
+// src/pages/NewMatchPage.tsx (eller EditMatchPage.tsx)
 import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-interface MatchForm {
-  home: string;
-  away: string;
-  veo_id?: string;
-}
+type Inputs = { home: string; away: string; veo_id?: string; logo_home?: string; logo_away?: string; };
 
-export default function EditMatchPage() {
-  const { id } = useParams<{ id: string }>();
+export default function NewMatchPage() {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Inputs>();
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<MatchForm>();
-
-  // hent eksisterende data
-  useEffect(() => {
-    (async () => {
-      const res = await fetch(`${import.meta.env.VITE_API}/matches/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setValue("home", data.home);
-        setValue("away", data.away);
-        setValue("veo_id", data.veo_id || "");
-      }
-    })();
-  }, [id, setValue]);
-
-  async function onSubmit(data: MatchForm) {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API}/matches/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      navigate(`/matches/${id}`); // tilbage til detaljeside
-    } catch (err) {
-      alert(`Kunne ikke gemme: ${err}`);
-    }
+  async function onSubmit(data: Inputs) {
+    // ... din API kode
+    navigate("/matches");
   }
 
   return (
-    <div className="mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-bold mb-4">Redigér kamp</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block font-medium">Hjemmehold</label>
-          <input
-            className="w-full border rounded p-2"
-            {...register("home", { required: "Påkrævet" })}
-          />
-          {errors.home && (
-            <p className="text-red-600 text-sm">{errors.home.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-medium">Udehold</label>
-          <input
-            className="w-full border rounded p-2"
-            {...register("away", { required: "Påkrævet" })}
-          />
-          {errors.away && (
-            <p className="text-red-600 text-sm">{errors.away.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-medium">Veo-ID (valgfrit)</label>
-          <input
-            className="w-full border rounded p-2"
-            {...register("veo_id")}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-blue-600 text-white rounded py-2 px-4 hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isSubmitting ? "Gemmer…" : "Gem"}
-        </button>
-      </form>
-    </div>
+    <main className="flex justify-center items-center min-h-screen bg-zinc-900">
+      <div className="bg-zinc-800 p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <Link to="/matches" className="text-blue-400 mb-4 block">&larr; Tilbage til kampe</Link>
+        <h1 className="text-2xl font-bold mb-6 text-white">Opret ny kamp</h1>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label className="block text-zinc-300 mb-1">Hjemmehold</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("home", { required: true })} placeholder="Hjemmehold" />
+            {errors.home && <span className="text-red-400 text-sm">Påkrævet</span>}
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Logo (URL, hjemmehold)</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("logo_home")} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Udehold</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("away", { required: true })} placeholder="Udehold" />
+            {errors.away && <span className="text-red-400 text-sm">Påkrævet</span>}
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Logo (URL, udehold)</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("logo_away")} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Veo-ID (valgfri)</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("veo_id")} placeholder="37453" />
+          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-blue-500 hover:bg-blue-700 text-white rounded px-4 py-2 font-bold w-full"
+          >
+            {isSubmitting ? "Gemmer…" : "Gem kamp"}
+          </button>
+        </form>
+      </div>
+    </main>
   );
 }
