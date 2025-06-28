@@ -1,4 +1,5 @@
-import { useRef } from "react";
+// src/pages/MatchesPage.tsx
+import { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useMatchesInfinite } from "../hooks/useMatchesInfinite";
 
@@ -13,76 +14,87 @@ export default function MatchesPage() {
   } = useMatchesInfinite();
 
   const matches = data?.pages.flat() ?? [];
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // sentinel-element til IntersectionObserver
-  const loadMoreRef = useRef<HTMLTableRowElement | null>(null);
-
-  // opsæt observer
-  React.useEffect(() => {
+  useEffect(() => {
     if (!loadMoreRef.current) return;
-
     const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
       { rootMargin: "200px" }
     );
-
     obs.observe(loadMoreRef.current);
     return () => obs.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  if (isLoading) return <p className="p-4">Henter kampe…</p>;
-  if (error)     return <p className="p-4 text-red-600">{error.message}</p>;
+  if (isLoading) return <p className="p-4 text-center">Henter kampe…</p>;
+  if (error) return <p className="p-4 text-center text-red-600">{error.message}</p>;
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
-      <nav className="flex gap-4 text-blue-500">
-        <Link to="/matches">Kampe</Link>
-        <Link to="/matches/new">Opret kamp</Link>
-      </nav>
+    <div className="container mx-auto px-4 py-8">
+      {/* Header + nav */}
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold">Kampe</h1>
+        <nav className="mt-4 sm:mt-0 space-x-4">
+          <Link to="/matches" className="text-blue-400 hover:underline">
+            Kampe
+          </Link>
+          <Link to="/matches/new" className="text-blue-400 hover:underline">
+            Opret kamp
+          </Link>
+        </nav>
+      </header>
 
-      <h1 className="text-4xl font-bold">Kampe</h1>
-
-      <table className="w-full border-collapse">
-        <thead className="border-b text-left">
-          <tr>
-            <th className="py-2 pr-4">#</th>
-            <th className="py-2 pr-4">Hjemme</th>
-            <th className="py-2 pr-4">Ude</th>
-            <th className="py-2">Veo-ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {matches.map((m, idx) => (
-            <tr key={m.id} className="border-b odd:bg-zinc-800/30">
-              <td className="py-2 pr-4">{idx}</td>
-              <td className="py-2 pr-4">
-                <Link className="hover:underline" to={`/matches/${m.id}`}>
+      {/* Grid med kampekort */}
+      <div className="grid gap-6 sm:grid-cols-2">
+        {matches.map((m) => (
+          <Link
+            key={m.id}
+            to={`/matches/${m.id}`}
+            className="group block bg-zinc-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <img
+                  src={m.logo_home || "/placeholder.png"}
+                  alt={m.home}
+                  className="logo"
+                />
+                <span className="ml-3 text-lg font-semibold text-white group-hover:text-blue-300">
                   {m.home}
-                </Link>
-              </td>
-              <td className="py-2 pr-4">{m.away}</td>
-              <td className="py-2">{m.veo_id ?? "—"}</td>
-            </tr>
-          ))}
-
-          {/* loader-række (observer-target) */}
-          <tr ref={loadMoreRef}>
-            <td colSpan={4} className="py-6 text-center">
-              {hasNextPage ? (
-                <span className="text-sm text-zinc-400">
-                  {isFetchingNextPage ? "Indlæser flere…" : "Scroll for at hente flere"}
                 </span>
-              ) : (
-                <span className="text-sm text-zinc-500">Alle kampe indlæst</span>
-              )}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </div>
+
+              <span className="text-zinc-400 font-medium">vs</span>
+
+              <div className="flex items-center">
+                <span className="mr-3 text-lg font-semibold text-white group-hover:text-blue-300">
+                  {m.away}
+                </span>
+                <img
+                  src={m.logo_away || "/placeholder.png"}
+                  alt={m.away}
+                  className="logo"
+                />
+              </div>
+            </div>
+
+            <div className="text-sm text-zinc-400">
+              <span className="font-medium text-zinc-500">Veo-ID:</span>{" "}
+              {m.veo_id ?? "—"}
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Sentinel + loader */}
+      <div ref={loadMoreRef} className="h-8" />
+      {isFetchingNextPage && (
+        <p className="text-center text-zinc-400 mt-6">Indlæser flere…</p>
+      )}
     </div>
   );
 }

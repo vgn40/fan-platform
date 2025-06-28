@@ -1,51 +1,55 @@
-import { useNavigate, useParams } from "react-router-dom";
+// src/pages/NewMatchPage.tsx (eller EditMatchPage.tsx)
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { useMatch } from "../hooks/useMatch";
-import { useUpdateMatch } from "../hooks/useUpdateMatch";
+import { useNavigate, Link } from "react-router-dom";
 
-type FormData = { home: string; away: string; veo_id?: string };
+type Inputs = { home: string; away: string; veo_id?: string; logo_home?: string; logo_away?: string; };
 
-export default function EditMatchPage() {
-  const { id = "" } = useParams();
-  const matchId = Number(id);
-  const nav     = useNavigate();
+export default function NewMatchPage() {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Inputs>();
+  const navigate = useNavigate();
 
-  const { data: match, isLoading, error } = useMatch(matchId);
-  const update = useUpdateMatch();
-
-  const { register, handleSubmit, reset } = useForm<FormData>();
-
-  // Når vi får data første gang ⇒ fyld formularen
-  useEffect(() => {
-    if (match) reset(match);
-  }, [match, reset]);
-
-  if (isLoading) return <p className="p-4">Indlæser…</p>;
-  if (error)     return <p className="p-4 text-red-600">{String(error)}</p>;
-  if (!match)    return null; // burde ikke ske, men for en god ordens skyld
-
-  async function onSubmit(data: FormData) {
-    await update.mutateAsync({ id: matchId, ...data });
-    nav("/matches");
+  async function onSubmit(data: Inputs) {
+    // ... din API kode
+    navigate("/matches");
   }
 
   return (
-    <div className="mx-auto max-w-md p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Redigér kamp</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <input className="w-full border p-2" {...register("home", { required: true })} />
-        <input className="w-full border p-2" {...register("away", { required: true })} />
-        <input className="w-full border p-2" {...register("veo_id")} />
-
-        <button
-          className="bg-blue-600 text-white rounded py-2 px-4 disabled:opacity-50"
-          disabled={update.isPending}
-        >
-          {update.isPending ? "Gemmer…" : "Gem"}
-        </button>
-      </form>
-    </div>
+    <main className="flex justify-center items-center min-h-screen bg-zinc-900">
+      <div className="bg-zinc-800 p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <Link to="/matches" className="text-blue-400 mb-4 block">&larr; Tilbage til kampe</Link>
+        <h1 className="text-2xl font-bold mb-6 text-white">Opret ny kamp</h1>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label className="block text-zinc-300 mb-1">Hjemmehold</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("home", { required: true })} placeholder="Hjemmehold" />
+            {errors.home && <span className="text-red-400 text-sm">Påkrævet</span>}
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Logo (URL, hjemmehold)</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("logo_home")} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Udehold</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("away", { required: true })} placeholder="Udehold" />
+            {errors.away && <span className="text-red-400 text-sm">Påkrævet</span>}
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Logo (URL, udehold)</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("logo_away")} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="block text-zinc-300 mb-1">Veo-ID (valgfri)</label>
+            <input className="w-full rounded px-3 py-2 bg-zinc-700 text-white" {...register("veo_id")} placeholder="37453" />
+          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-blue-500 hover:bg-blue-700 text-white rounded px-4 py-2 font-bold w-full"
+          >
+            {isSubmitting ? "Gemmer…" : "Gem kamp"}
+          </button>
+        </form>
+      </div>
+    </main>
   );
 }

@@ -1,59 +1,122 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useMatch } from "../hooks/useMatch";
-import { useDeleteMatch } from "../hooks/useDeleteMatch";
+// src/pages/MatchDetailPage.tsx
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+
+type Match = {
+  id: number;
+  home: string;
+  away: string;
+  veo_id?: string;
+  logo_home?: string | null;
+  logo_away?: string | null;
+};
 
 export default function MatchDetailPage() {
-  const { id = "" } = useParams();
-  const matchId = Number(id);
-  const nav = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-  const { data: match, isLoading, error } = useMatch(matchId);
-  const del = useDeleteMatch();
+  const [match, setMatch] = useState<Match | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  async function handleDelete() {
-    if (confirm("Er du sikker på at du vil slette?")) {
-      await del.mutateAsync(matchId);
-      nav("/matches");
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API}/matches/${id}`);
+        if (!res.ok) throw new Error(await res.text());
+        setMatch(await res.json());
+      } catch (err) {
+        setError(String(err));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id]);
+
+  const handleDelete = async () => {
+    if (!confirm("Er du sikker på, du vil slette kampen?")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API}/matches/${id}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      navigate("/matches");
+    } catch (err) {
+      alert(`Kunne ikke slette: ${err}`);
+    } finally {
+      setDeleting(false);
     }
-  }
+  };
 
-  if (isLoading) return <p className="p-4">Indlæser…</p>;
-  if (error)     return <p className="p-4 text-red-600">{String(error)}</p>;
-  if (!match)    return <p className="p-4">Match ikke fundet</p>;
+  if (loading) return <p className="p-6 text-center">Henter kamp…</p>;
+  if (error) return <p className="p-6 text-center text-red-600">{error}</p>;
+  if (!match) return <p className="p-6 text-center text-red-600">Kamp ikke fundet</p>;
 
   return (
-    <div className="mx-auto max-w-2xl p-6 space-y-8">
-      <h1 className="text-3xl font-bold">
-        {match.home} – {match.away}
-      </h1>
-
-      {/* Veo-video placeholder */}
-      {match.veo_id ? (
-        <div className="aspect-video bg-black/40 flex items-center justify-center rounded">
-          <p className="text-sm text-zinc-400">Veo-video #{match.veo_id}</p>
-        </div>
-      ) : (
-        <div className="aspect-video bg-zinc-800/40 flex items-center justify-center rounded">
-          <p className="text-sm text-zinc-400">Ingen video tilføjet endnu</p>
-        </div>
-      )}
-
-      <div className="flex gap-4">
+    <main className="container mx-auto px-4 py-8 space-y-6">
+      {/* Breadcrumb + actions */}
+      <nav className="flex items-center justify-between">
         <Link
-          to={`/matches/${matchId}/edit`}
-          className="text-blue-500 hover:underline"
+          to="/matches"
+          className="flex items-center gap-1 text-blue-400 hover:text-blue-300"
         >
-          Redigér
+          <span className="-ml-1 text-lg">←</span>
+          <span>Alle kampe</span>
         </Link>
 
-        <button
-          onClick={handleDelete}
-          disabled={del.isPending}
-          className="text-red-500 hover:underline disabled:opacity-50"
-        >
-          {del.isPending ? "Sletter…" : "Slet"}
-        </button>
-      </div>
-    </div>
+        <div className="flex items-center gap-5">
+          <Link
+            to={`/matches/${match.id}/edit`}
+            className="text-blue-400 hover:text-blue-300 underline-offset-4 hover:underline"
+          >
+            Redigér
+          </Link>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="rounded-md bg-red-600 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-red-500 disabled:opacity-50"
+          >
+            {deleting ? "Sletter…" : "Slet"}
+          </button>
+        </div>
+      </nav>
+
+      {/* Kamp-header */}
+      <section className="flex flex-col sm:flex-row items-center justify-between bg-zinc-800 p-6 rounded-xl shadow-lg space-y-4 sm:space-y-0">
+        <div className="flex items-center gap-4">
+          <img
+            src={match.logo_home || "/placeholder.png"}
+            alt={match.home}
+            className="logo"
+          />
+          <span className="text-2xl font-bold">{match.home}</span>
+        </div>
+
+        <span className="text-zinc-400 text-xl font-semibold">vs</span>
+
+        <div className="flex items-center gap-4">
+          <span className="text-2xl font-bold">{match.away}</span>
+          <img
+            src={match.logo_away || "/placeholder.png"}
+            alt={match.away}
+            className="logo"
+          />
+        </div>
+      </section>
+
+      {/* Detaljer */}
+      <section className="bg-zinc-800 p-6 rounded-xl shadow-lg space-y-2">
+        <h2 className="text-xl font-semibold">Detaljer</h2>
+        <p>
+          <span className="text-zinc-400">Veo-ID:</span> {match.veo_id ?? "—"}
+        </p>
+        <p>
+          <span className="text-zinc-400">Match-ID:</span> {match.id}
+        </p>
+      </section>
+    </main>
   );
 }
