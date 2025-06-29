@@ -10,7 +10,7 @@ import type { MatchUpdateInput } from "../hooks/useUpdateMatch";
 type Match = {
   id: number;
   home: string;
-  home:rrr string;r
+  home:rrr string;raweaweew
   away: string;
   date: string;
   veo_id?: string | null;
