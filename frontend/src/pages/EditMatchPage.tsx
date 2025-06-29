@@ -168,10 +168,10 @@ export default function EditMatchPage() {
 
         <button
           type="submit"
-          disabled={isSubmitting || updateMutation.isLoading}
+          disabled={isSubmitting || updateMutation.isPending}
           className="w-full bg-primary hover:bg-indigo-600 text-white py-2 rounded-md disabled:opacity-50"
         >
-          {isSubmitting || updateMutation.isLoading
+          {isSubmitting || updateMutation.isPending
             ? "Gemmer…"
             : "Gem ændringer"}
         </button>

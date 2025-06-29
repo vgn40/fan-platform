@@ -110,10 +110,10 @@ export default function NewMatchPage() {
         {/* ─── Submit ─── */}
         <button
           type="submit"
-          disabled={isSubmitting || createMatch.isLoading}
+          disabled={isSubmitting || createMatch.isPending}
           className="w-full bg-[var(--color-primary)] hover:bg-indigo-600 text-white py-2 rounded-md disabled:opacity-50"
         >
-          {isSubmitting || createMatch.isLoading ? "Opretter…" : "Opret kamp"}
+          {isSubmitting || createMatch.isPending ? "Opretter…" : "Opret kamp"}
         </button>
 
         {createMatch.isError && (

@@ -18,7 +18,7 @@ export function useMatchesInfinite(opts: { status: "upcoming" | "past" }) {
       if (!res.ok) throw new Error("Kunne ikke hente kampe")
       return (await res.json()) as Match[]
     },
-    initialPageParam: 0,    // ← påkrævet i v5
+    initialPageParam: 0,    // ← her is het verplicht in v5
     getNextPageParam: (lastPage, pages) =>
       lastPage.length === PAGE_SIZE
         ? pages.length * PAGE_SIZE

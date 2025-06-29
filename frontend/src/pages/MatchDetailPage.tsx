@@ -92,10 +92,10 @@ export default function MatchDetailPage() {
           </Link>
           <button
             onClick={() => deleteMutation.mutate()}
-            disabled={deleteMutation.isLoading}
+            disabled={deleteMutation.isPending}
             className="bg-red-600 px-4 py-1.5 text-white rounded hover:bg-red-500 disabled:opacity-50"
           >
-            {deleteMutation.isLoading ? "Sletter…" : "Slet"}
+            {deleteMutation.isPending ? "Sletter…" : "Slet"}
           </button>
         </div>
       </nav>
