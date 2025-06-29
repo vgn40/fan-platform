@@ -57,6 +57,10 @@ db.sqlite3
 logs/
 # --- fan-platform (backend) ---
 .env
-fan.db
+fan.dbf
 *.sqlite3
 __pycache__/
+
+
+# ignore all lockfiles
+*.lock
