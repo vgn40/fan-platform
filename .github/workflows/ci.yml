@@ -18,6 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Cache poetry & pip
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -31,7 +39,14 @@ jobs:
 
       - name: Run backend tests
         run: |
-          poetry run pytest --maxfail=1 --disable-warnings -q
+          poetry run pytest --maxfail=1 --disable-warnings -q --junitxml=backend-test-results.xml --cov=.
+      
+      - name: Upload backend coverage report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage
+          path: coverage.xml
 
   # --- Node frontend tests & build -----------------------------
   frontend:
@@ -39,6 +54,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Cache npm
+      - uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js 18
         uses: actions/setup-node@v4
@@ -54,7 +75,14 @@ jobs:
         working-directory: ./frontend
         run: |
           npm run lint
-          npm test -- --coverage
+          npm test -- --coverage --coverageReporters=text-lcov
+
+      - name: Upload frontend coverage report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/lcov.info
 
       - name: Build production bundle
         working-directory: ./frontend
@@ -66,4 +94,3 @@ jobs:
         with:
           name: frontend-dist
           path: ./frontend/dist
-
