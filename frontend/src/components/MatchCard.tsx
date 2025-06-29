@@ -1,5 +1,4 @@
 // frontend/src/components/MatchCard.tsx
-import React from "react"
 import { Link } from "react-router-dom"
 import type { Match } from "../types"
 
@@ -14,7 +13,7 @@ export function MatchCard({ match }: MatchCardProps) {
   })
 
   return (
-    <Link to={`/matches/${match.id}`} className="block max-w-sm mx-auto group">
+    <Link to={`/matches/${match.id}`} className="block group">
       <div className="aspect-square bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-lg group-hover:shadow-2xl transition-shadow">
         <img
           src={match.logo_home || "/placeholder.png"}
@@ -23,7 +22,7 @@ export function MatchCard({ match }: MatchCardProps) {
         />
       </div>
       <div className="mt-4 text-center">
-        <p className="font-semibold text-lg text-indigo-100">
+        <p className="font-semibold text-lg text-indigo-200">
           {match.home} <span className="text-indigo-400">vs</span> {match.away}
         </p>
         <p className="mt-1 text-sm text-indigo-300">{dateStr}</p>
