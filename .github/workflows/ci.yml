@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main, prod]
+    branches:
+      - main
+      - prod
   pull_request:
-    branches: [main, prod]
+    branches:
+      - main
+      - prod
 
 jobs:
   backend:
@@ -45,7 +49,6 @@ jobs:
             --junitxml=tests/backend-test-results.xml \
             --cov=main \
             --cov-report xml:coverage.xml
-
 
       - name: Upload backend coverage report
         if: always()
