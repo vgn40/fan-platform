@@ -5,8 +5,8 @@ import type { Match } from "../types"
 export const PAGE_SIZE = 20
 
 export function useMatchesInfinite(opts: { status: "upcoming" | "past" }) {
-  return useInfiniteQuery<Match[], Error, Match[], [string, string]>({
-    queryKey: ["matches", opts.status],
+  return useInfiniteQuery({
+    queryKey: ["matches", opts.status] as const,
     queryFn: async ({ pageParam = 0 }) => {
       const now  = new Date().toISOString()
       const base = `${import.meta.env.VITE_API}/matches`
@@ -18,10 +18,10 @@ export function useMatchesInfinite(opts: { status: "upcoming" | "past" }) {
       if (!res.ok) throw new Error("Kunne ikke hente kampe")
       return (await res.json()) as Match[]
     },
-    initialPageParam: 0,    // ← her is het verplicht in v5
-    getNextPageParam: (lastPage, pages) =>
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
       lastPage.length === PAGE_SIZE
-        ? pages.length * PAGE_SIZE
+        ? allPages.length * PAGE_SIZE
         : undefined,
   })
 }

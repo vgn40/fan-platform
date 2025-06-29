@@ -1,26 +1,32 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+// frontend/src/hooks/useMatches.ts
+import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query"
+import type { Match } from "../types"
 
-export const PAGE_SIZE = 20;
+export const PAGE_SIZE = 20
 
-export type Match = {
-  id: number;
-  home: string;
-  away: string;
-  date: string;
-  veo_id?: string | null;
-};
+export function useMatchesInfinite(opts: { status: "upcoming" | "past" }) {
+  return useInfiniteQuery<
+    Match[],                 // TQueryFnData
+    Error,                   // TError
+    InfiniteData<Match[]>,   // TData
+    [string, "upcoming" | "past"] // TQueryKey
+  >({
+    queryKey: ["matches", opts.status] as const,
+    queryFn: async ({ pageParam = 0 }) => {
+      const now  = new Date().toISOString()
+      const base = `${import.meta.env.VITE_API}/matches`
+      const params =
+        `?skip=${pageParam}&limit=${PAGE_SIZE}` +
+        (opts.status === "upcoming" ? `&after=${now}` : `&before=${now}`)
 
-export function useMatches() {
-  return useInfiniteQuery<Match[], Error>({
-    queryKey: ["matches"],
-    queryFn: ({ pageParam = 0 }) =>
-      fetch(
-        `${import.meta.env.VITE_API}/matches?skip=${pageParam}&limit=${PAGE_SIZE}`
-      ).then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json() as Promise<Match[]>;
-      }),
+      const res = await fetch(base + params)
+      if (!res.ok) throw new Error("Kunne ikke hente kampe")
+      return (await res.json()) as Match[]
+    },
+    initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
-      lastPage.length === PAGE_SIZE ? allPages.length * PAGE_SIZE : undefined,
-  });
+      lastPage.length === PAGE_SIZE
+        ? allPages.length * PAGE_SIZE
+        : undefined,
+  })
 }

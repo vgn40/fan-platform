@@ -1,22 +1,20 @@
+// frontend/src/hooks/useCreateMatch.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Match, MatchInput } from "../types"
 
 export function useCreateMatch() {
   const qc = useQueryClient()
-
   return useMutation<Match, Error, MatchInput>({
-    mutationFn: input =>
-      fetch(`${import.meta.env.VITE_API}/matches`, {
+    mutationFn: async (data) => {
+      const res = await fetch(`${import.meta.env.VITE_API}/matches`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(input),
-      }).then(r => {
-        if (!r.ok) throw new Error("Fejl ved oprettelse")
-        return r.json() as Promise<Match>
-      }),
-
+        body:    JSON.stringify(data),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      return res.json() as Promise<Match>
+    },
     onSuccess: () => {
-      // v5 requires an object here:
       qc.invalidateQueries({ queryKey: ["matches"] })
     },
   })
