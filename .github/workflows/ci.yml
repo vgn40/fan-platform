@@ -2,46 +2,68 @@ name: CI
 
 on:
   push:
-    branches: [ main, feature/** ]
+    branches:
+      - main
+      - prod
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - prod
 
 jobs:
-  lint-test-build:
+  # --- Python backend tests ------------------------------------
+  backend:
+    name: 🐍 Backend (Python) Tests
     runs-on: ubuntu-latest
     steps:
-      - name: "Check out kode"
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: 18
+          python-version: '3.12'
 
-      - name: "Frontend: Install & CI"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-interaction --no-ansi
+
+      - name: Run backend tests
+        run: |
+          poetry run pytest --maxfail=1 --disable-warnings -q
+
+  # --- Node frontend tests & build -----------------------------
+  frontend:
+    name: ⚛️ Frontend (React) Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
         working-directory: ./frontend
         run: |
           npm ci
+
+      - name: Run lint & tests
+        working-directory: ./frontend
+        run: |
           npm run lint
-          npm test -- --watchAll=false
+          npm test -- --coverage
+
+      - name: Build production bundle
+        working-directory: ./frontend
+        run: |
           npm run build
 
-      - name: "Setup Python"
-        uses: actions/setup-python@v4
+      - name: Upload production build as artifact
+        uses: actions/upload-artifact@v3
         with:
-          python-version: '3.11'
+          name: frontend-dist
+          path: ./frontend/dist
 
-      - name: "Backend: Install & CI"
-        working-directory: ./backend
-        run: |
-          pip install -r requirements.txt
-          flake8 .
-          pytest --maxfail=1 --disable-warnings -q
-
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    needs: lint-test-build
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Stub for deployment"
-        run: echo "Her indsætter du deploy-kommandoer når du er klar"
