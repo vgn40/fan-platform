@@ -2,7 +2,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app   # ← main.py lives in backend/, so pytest must be run from there
+from backend.main import app    # ← correct
 
 @pytest.fixture
 def client():

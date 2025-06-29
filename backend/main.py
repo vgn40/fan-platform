@@ -2,14 +2,12 @@
 
 from typing               import List, Optional
 from datetime             import datetime
-
 from fastapi              import FastAPI, HTTPException, status, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel             import SQLModel, Session, select
 
-from db                   import engine, get_session
-from models               import Match, MatchCreate, MatchUpdate
-
+from .db     import engine, get_session
+from .models import Match, MatchCreate, MatchUpdate
 app = FastAPI()
 
 # ── Ensure SQLite tables exist on startup ────────────────────────────
@@ -29,6 +27,10 @@ app.add_middleware(
 # ─────────────────────────────────────────────────────────────────────
 #                                MATCH API
 # ─────────────────────────────────────────────────────────────────────
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
 
 @app.get("/matches", response_model=List[Match])
 def list_matches(
@@ -67,7 +69,7 @@ def create_match(
     """
     Create a new match. All fields in MatchCreate are required.
     """
-    db_match = Match(**match.model_dump())
+    db_match = Match(**match.dict())
     session.add(db_match)
     session.commit()
     session.refresh(db_match)

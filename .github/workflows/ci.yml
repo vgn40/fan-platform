@@ -27,22 +27,23 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        working-directory: backend
+        working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
           pip install poetry
           poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
-        working-directory: backend        # ← MUST be inside backend/
+        working-directory: backend
         run: |
-          poetry run pytest \
+          poetry run pytest tests \
             --maxfail=1 \
             --disable-warnings \
             -q \
-            --junitxml=tests/backend-test-results.xml \
-            --cov=main \
-            --cov-report xml:coverage.xml
+            --junitxml=backend/tests/backend-test-results.xml \
+            --cov=backend.main \
+            --cov-report xml:backend/coverage.xml
+
 
       - name: Upload backend coverage report
         if: always()
@@ -68,11 +69,11 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: ./frontend
         run: npm ci
 
       - name: Run lint & tests
-        working-directory: frontend
+        working-directory: ./frontend
         run: |
           npm run lint
           npm test -- --coverage --coverageReporters=text-lcov --coverageDirectory=coverage
@@ -85,7 +86,7 @@ jobs:
           path: frontend/coverage/lcov.info
 
       - name: Build production bundle
-        working-directory: frontend
+        working-directory: ./frontend
         run: npm run build
 
       - name: Upload production build as artifact
