@@ -2,23 +2,18 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - prod
+    branches: [ main, prod ]
   pull_request:
-    branches:
-      - main
-      - prod
+    branches: [ main, prod ]
 
 jobs:
-  # --- Python backend tests ------------------------------------
   backend:
     name: 🐍 Backend (Python) Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # Cache Poetry & pip
+      # Cache Poetry & Pip
       - uses: actions/cache@v3
         with:
           path: |
@@ -32,16 +27,14 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        working-directory: ./backend
+        working-directory: backend
         run: |
           python -m pip install --upgrade pip
           pip install poetry
           poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
-        working-directory: ./backend
-        env:
-          POETRY_CACHE_DIR: ~/.cache/pypoetry
+        working-directory: backend
         run: |
           poetry run pytest tests \
             --maxfail=1 \
@@ -58,7 +51,6 @@ jobs:
           name: backend-coverage
           path: backend/coverage.xml
 
-  # --- Node frontend tests & build -----------------------------
   frontend:
     name: ⚛️ Frontend (React) Tests & Build
     runs-on: ubuntu-latest
@@ -77,11 +69,11 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        working-directory: ./frontend
+        working-directory: frontend
         run: npm ci
 
       - name: Run lint & tests
-        working-directory: ./frontend
+        working-directory: frontend
         run: |
           npm run lint
           npm test -- --coverage --coverageReporters=text-lcov --coverageDirectory=coverage
@@ -94,7 +86,7 @@ jobs:
           path: frontend/coverage/lcov.info
 
       - name: Build production bundle
-        working-directory: ./frontend
+        working-directory: frontend
         run: npm run build
 
       - name: Upload production build as artifact
