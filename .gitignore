@@ -4,6 +4,7 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # ─── Node / React / Vite ─────────────────────────────────────────────────────
 node_modules/
@@ -13,31 +14,51 @@ dist/
 .next/
 out/
 
+# Vite / framework‐specifikt
+**/.vitepress/dist
+**/.vitepress/cache
+
 # Editor stuff
-.vscode/*
+.vscode/
 !.vscode/extensions.json
 .idea/
 .DS_Store
 
 # Coverage
 coverage/
+.nyc_output/
+coverage.*
+report.*.json
+
+# ─── Environment files ────────────────────────────────────────────────────────
+# (Gem .env-filer lokalt, men IKKE tjek ind i git)
+.env
+frontend/.env
+backend/.env
 
 # ─── Python / FastAPI ────────────────────────────────────────────────────────
-# venvs & caches
+# virtual envs & caches
 venv/
 backend/.venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# local DB / migrations
+# lokale databaser & migrations
 fan.db
 db.sqlite3
 alembic/versions/
 
+# IDE / OS
+.idea/
+*.swp
+*.suo
+
 # ─── Lockfiles ───────────────────────────────────────────────────────────────
-# ignore all lock-files...
+# ignore alle lockfiles…
 *.lock
 
-# ...but keep the two we actually commit:
+# …men hold de to vi faktisk vil committe
 !frontend/package-lock.json
 !backend/poetry.lock
