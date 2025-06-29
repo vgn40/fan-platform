@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { useUpdateMatch } from "../hooks/useUpdateMatch";
 import type { MatchUpdateInput } from "../hooks/useUpdateMatch";
@@ -19,7 +19,6 @@ type Match = {
 export default function EditMatchPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const qc = useQueryClient();
 
   // 1) Hent eksisterende kamp
   const {
