@@ -39,11 +39,17 @@ jobs:
 
       - name: Run backend tests
         run: |
-          poetry run pytest --maxfail=1 --disable-warnings -q --junitxml=backend-test-results.xml --cov=.
-      
+          poetry run pytest \
+            --maxfail=1 \
+            --disable-warnings \
+            -q \
+            --junitxml=backend-test-results.xml \
+            --cov=. \
+            --cov-report xml:coverage.xml
+
       - name: Upload backend coverage report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
           path: coverage.xml
@@ -68,8 +74,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./frontend
-        run: |
-          npm ci
+        run: npm ci
 
       - name: Run lint & tests
         working-directory: ./frontend
@@ -79,18 +84,17 @@ jobs:
 
       - name: Upload frontend coverage report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
           path: frontend/coverage/lcov.info
 
       - name: Build production bundle
         working-directory: ./frontend
-        run: |
-          npm run build
+        run: npm run build
 
       - name: Upload production build as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: ./frontend/dist
