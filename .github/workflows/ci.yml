@@ -11,6 +11,7 @@ on:
       - prod
 
 jobs:
+  # --- Python backend tests ------------------------------------
   backend:
     name: 🐍 Backend (Python) Tests
     runs-on: ubuntu-latest
@@ -38,17 +39,17 @@ jobs:
           poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
+        working-directory: ./backend
         env:
           POETRY_CACHE_DIR: ~/.cache/pypoetry
-          PYTHONPATH: .
         run: |
-          poetry run pytest backend/tests \
+          poetry run pytest tests \
             --maxfail=1 \
             --disable-warnings \
             -q \
-            --junitxml=backend/tests/backend-test-results.xml \
-            --cov=backend.main \
-            --cov-report xml:backend/coverage.xml
+            --junitxml=tests/backend-test-results.xml \
+            --cov=main \
+            --cov-report xml:coverage.xml
 
       - name: Upload backend coverage report
         if: always()
@@ -57,6 +58,7 @@ jobs:
           name: backend-coverage
           path: backend/coverage.xml
 
+  # --- Node frontend tests & build -----------------------------
   frontend:
     name: ⚛️ Frontend (React) Tests & Build
     runs-on: ubuntu-latest
