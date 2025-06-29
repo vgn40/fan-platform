@@ -48,6 +48,13 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Python
+/backend/.venv/
+/backend/.env
+
+# React/Vite
+/frontend/.env
+
 # Migrations & local DB
 alembic/versions/
 db.sqlite3
