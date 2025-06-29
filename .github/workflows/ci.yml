@@ -2,16 +2,11 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - prod
+    branches: [main, prod]
   pull_request:
-    branches:
-      - main
-      - prod
+    branches: [main, prod]
 
 jobs:
-  # --- Python backend tests ------------------------------------
   backend:
     name: 🐍 Backend (Python) Tests
     runs-on: ubuntu-latest
@@ -32,6 +27,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
+        working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
           pip install poetry
@@ -39,10 +35,10 @@ jobs:
 
       - name: Run backend tests
         env:
-          # gør backend/ til et importbart package
-          PYTHONPATH: ${{ github.workspace }}
+          POETRY_CACHE_DIR: ~/.cache/pypoetry
+          PYTHONPATH: .
         run: |
-          poetry run pytest backend \
+          poetry run pytest backend/tests \
             --maxfail=1 \
             --disable-warnings \
             -q \
@@ -57,7 +53,6 @@ jobs:
           name: backend-coverage
           path: backend/coverage.xml
 
-  # --- Node frontend tests & build -----------------------------
   frontend:
     name: ⚛️ Frontend (React) Tests & Build
     runs-on: ubuntu-latest
