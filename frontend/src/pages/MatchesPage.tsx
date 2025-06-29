@@ -1,12 +1,10 @@
-// src/pages/MatchesPage.tsx
 import { useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 
-// hook‐funtionen
+// hook-funktionen
 import { useMatchesInfinite } from "../hooks/useMatchesInfinite"
 // kun typen – hent den fra /src/types.ts
 import type { Match } from "../types"
-
 export default function MatchesPage() {
   const [status, setStatus] = useState<"upcoming" | "past">("upcoming")
   const {
