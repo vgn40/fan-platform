@@ -17,7 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache Poetry & Pip
       - uses: actions/cache@v3
         with:
           path: |
@@ -63,7 +62,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache npm
       - uses: actions/cache@v3
         with:
           path: ~/.npm
