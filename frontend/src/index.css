@@ -10,8 +10,8 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  margin: 0.2rem;
+  padding: 0.1rem;
 }
 
 /* ─────────────────────────────────────────────────────────── */
@@ -48,6 +48,7 @@ img {
   display: block;
   max-width: 100%;
   height: auto;
+  
 }
 /* <img class="logo" …> skal altid max være 3rem×3rem */
 .logo {
@@ -57,8 +58,18 @@ img {
   height: auto;
   object-fit: cover;
   border-radius: 9999px;
+  margin: 1rem;
 }
 
+.logoforside {
+  max-width: 5rem;      /* tidligere 3rem */
+  max-height: 5rem;     /* tidligere 3rem */
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  border-radius: 9999px;
+  margin: 1rem;
+}
 /* ─────────────────────────────────────────────────────────── */
 /* 6) Hjælp til navigation                                    */
 nav > a + a {

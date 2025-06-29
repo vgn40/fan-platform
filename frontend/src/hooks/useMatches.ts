@@ -6,6 +6,7 @@ export type Match = {
   id: number;
   home: string;
   away: string;
+  date: string;
   veo_id?: string | null;
 };
 

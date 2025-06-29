@@ -1,9 +1,11 @@
-// src/pages/MatchesPage.tsx
-import { useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useMatchesInfinite } from "../hooks/useMatchesInfinite";
+import { useState, useRef, useEffect } from "react"
+import { Link } from "react-router-dom"
+
+// ✅ Import både hook + typen Match
+import { useMatchesInfinite, Match } from "../hooks/useMatchesInfinite"
 
 export default function MatchesPage() {
+  const [status, setStatus] = useState<"upcoming" | "past">("upcoming")
   const {
     data,
     error,
@@ -11,90 +13,104 @@ export default function MatchesPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMatchesInfinite();
+  } = useMatchesInfinite({ status })
 
-  const matches = data?.pages.flat() ?? [];
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  // Flat pages ud til ét array af Match
+  const matches: Match[] = data?.pages.flat() ?? []
 
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    if (!loadMoreRef.current) return
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+      ([e]) => {
+        if (e.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
         }
       },
       { rootMargin: "200px" }
-    );
-    obs.observe(loadMoreRef.current);
-    return () => obs.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    )
+    obs.observe(loadMoreRef.current)
+    return () => obs.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  if (isLoading) return <p className="p-4 text-center">Henter kampe…</p>;
-  if (error) return <p className="p-4 text-center text-red-600">{error.message}</p>;
+  if (isLoading) return <p className="p-4 text-center">Henter kampe…</p>
+  if (error)     return <p className="p-4 text-center text-red-600">{error.message}</p>
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header + nav */}
-      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold">Kampe</h1>
-        <nav className="mt-4 sm:mt-0 space-x-4">
-          <Link to="/matches" className="text-blue-400 hover:underline">
-            Kampe
-          </Link>
-          <Link to="/matches/new" className="text-blue-400 hover:underline">
-            Opret kamp
-          </Link>
-        </nav>
-      </header>
+    <div className="mx-auto max-w-4xl p-6 space-y-8">
+      <nav className="flex gap-4 mb-6">
+        <Link to="/matches" className="text-primary hover:underline">Kampe</Link>
+        <Link to="/matches/new" className="text-primary hover:underline">Opret kamp</Link>
+      </nav>
 
-      {/* Grid med kampekort */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setStatus("upcoming")}
+          className={`px-4 py-2 rounded-md ${
+            status === "upcoming"
+              ? "bg-primary text-white"
+              : "bg-zinc-700 text-zinc-300"
+          }`}
+        >
+          Kommende
+        </button>
+        <button
+          onClick={() => setStatus("past")}
+          className={`px-4 py-2 rounded-md ${
+            status === "past"
+              ? "bg-primary text-white"
+              : "bg-zinc-700 text-zinc-300"
+          }`}
+        >
+          Afviklede
+        </button>
+      </div>
+
+      <h1 className="text-3xl font-bold">
+        {status === "upcoming" ? "Kommende kampe" : "Tidligere kampe"}
+      </h1>
+
       <div className="grid gap-6 sm:grid-cols-2">
         {matches.map((m) => (
           <Link
             key={m.id}
             to={`/matches/${m.id}`}
-            className="group block bg-zinc-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition"
+            className="group block bg-zinc-800 rounded-xl p-4 shadow hover:shadow-lg transition"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <img
                   src={m.logo_home || "/placeholder.png"}
                   alt={m.home}
-                  className="logo"
+                  className="h-12 w-12 rounded-full"
                 />
-                <span className="ml-3 text-lg font-semibold text-white group-hover:text-blue-300">
-                  {m.home}
-                </span>
+                <span className="font-semibold text-white">{m.home}</span>
               </div>
-
-              <span className="text-zinc-400 font-medium">vs</span>
-
-              <div className="flex items-center">
-                <span className="mr-3 text-lg font-semibold text-white group-hover:text-blue-300">
-                  {m.away}
-                </span>
+              <span className="text-zinc-400">vs</span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-white">{m.away}</span>
                 <img
                   src={m.logo_away || "/placeholder.png"}
                   alt={m.away}
-                  className="logo"
+                  className="h-12 w-12 rounded-full"
                 />
               </div>
             </div>
-
-            <div className="text-sm text-zinc-400">
-              <span className="font-medium text-zinc-500">Veo-ID:</span>{" "}
-              {m.veo_id ?? "—"}
+            <div className="mt-3 text-sm text-zinc-500">
+              {new Date(m.date).toLocaleString("da-DK", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Sentinel + loader */}
-      <div ref={loadMoreRef} className="h-8" />
-      {isFetchingNextPage && (
-        <p className="text-center text-zinc-400 mt-6">Indlæser flere…</p>
+      <div ref={loadMoreRef} className="h-2" />
+      {isFetchingNextPage && <p className="text-center text-zinc-400 mt-4">Indlæser flere…</p>}
+      {!hasNextPage && matches.length > 0 && (
+        <p className="text-center text-zinc-500 mt-4">Alle kampe indlæst</p>
       )}
     </div>
-  );
+  )
 }
