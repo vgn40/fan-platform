@@ -20,9 +20,9 @@ jobs:
         working-directory: ./backend
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      # Cache Poetry & pip
       - name: Cache Python deps
         uses: actions/cache@v3
         with:
@@ -44,21 +44,67 @@ jobs:
 
       - name: Run backend tests
         run: |
-          poetry run pytest \
-            --maxfail=1 \
-            --disable-warnings \
-            -q \
+          poetry run pytest --maxfail=1 --disable-warnings -q \
             --junitxml=backend-test-results.xml \
-            --cov=. \
-            --cov-report=xml
+            --cov=. --cov-report=xml
 
       - name: Upload backend test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: backend-test-results
-          path: backend-test-results.xml
+          path: backend/backend-test-results.xml
 
       - name: Upload backend coverage report
         if: always()
-        uses: actions/upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage
+          path: backend/coverage.xml
+
+  # --- Node frontend tests & build -----------------------------
+  frontend:
+    name: ⚛️ Frontend (React) Tests & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Cache NPM
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint & tests
+        run: |
+          npm run lint
+          npm test -- --coverage --coverageReporters=text-lcov
+
+      - name: Upload frontend coverage report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/lcov.info
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Upload production build as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-dist
+          path: frontend/dist
