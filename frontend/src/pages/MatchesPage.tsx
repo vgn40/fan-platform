@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 
-// ✅ Import både hook + typen Match
-import { useMatchesInfinite, Match } from "../hooks/useMatchesInfinite"
-
+// runtime import:
+import { useMatchesInfinite } from "../hooks/useMatchesInfinite"
+// type‐only import:
+import type { Match } from "../hooks/useMatchesInfinite"
 export default function MatchesPage() {
   const [status, setStatus] = useState<"upcoming" | "past">("upcoming")
   const {
