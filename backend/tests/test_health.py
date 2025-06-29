@@ -1,7 +1,8 @@
 # backend/tests/test_health.py
 import pytest
 from fastapi.testclient import TestClient
-from backend.main import app   # ← korrekt: “backend.main”
+
+from main import app   # ← main.py lives in backend/, so pytest must be run from there
 
 @pytest.fixture
 def client():
