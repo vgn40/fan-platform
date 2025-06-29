@@ -37,17 +37,18 @@ jobs:
           poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
-        working-directory: ./backend
         env:
           POETRY_CACHE_DIR: ~/.cache/pypoetry
+          PYTHONPATH: .
         run: |
-          poetry run pytest \
+          poetry run pytest backend/tests \
             --maxfail=1 \
             --disable-warnings \
             -q \
-            --junitxml=tests/backend-test-results.xml \
-            --cov=main \
-            --cov-report xml:coverage.xml
+            --junitxml=backend/tests/backend-test-results.xml \
+            --cov=backend.main \
+            --cov-report xml:backend/coverage.xml
+
 
       - name: Upload backend coverage report
         if: always()
