@@ -1,66 +1,43 @@
-# ─── Node / React / Vite ─────────────────────────────────────────
-# Build output
-dist/
-build/
-out/
-.next/
-.nuxt/
-.cache/
-.vite/
-**/.vitepress/dist
-**/.vitepress/cache
-
-# Dependencies & tooling
-node_modules/
-.pnpm/
-.yarn/cache/
-.yarn/unplugged/
-.pnpm-debug.log*
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-*.log
-*.tsbuildinfo
-.env*
-*.local
-.vscode/
+pnpm-debug.log*
 
-# Coverage & reports
-coverage/
-.nyc_output/
-report.*.json
+# ─── Node / React / Vite ─────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+.cache/
+.next/
+out/
 
-# ─── Python / FastAPI ────────────────────────────────────────────
-# Virtual-envs
-venv/
-.env/            # hvis du bruger pip-env/poetry
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-
-# IDE
+# Editor stuff
+.vscode/*
+!.vscode/extensions.json
 .idea/
-*.swp
+.DS_Store
 
-# Migrations & local DB
-alembic/versions/
-db.sqlite3
+# Coverage
+coverage/
 
-# ─── Docker & Misc ───────────────────────────────────────────────
-# Docker artefacts
-*.pid
-*.seed
-*.pid.lock
-
-# Logs
-logs/
-# --- fan-platform (backend) ---
-.env
-fan.dbf
-*.sqlite3
+# ─── Python / FastAPI ────────────────────────────────────────────────────────
+# venvs & caches
+venv/
+backend/.venv/
 __pycache__/
+*.pyc
 
+# local DB / migrations
+fan.db
+db.sqlite3
+alembic/versions/
 
-# ignore all lockfiles
+# ─── Lockfiles ───────────────────────────────────────────────────────────────
+# ignore all lock-files...
 *.lock
+
+# ...but keep the two we actually commit:
+!frontend/package-lock.json
+!backend/poetry.lock
