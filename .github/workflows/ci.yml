@@ -47,7 +47,7 @@ jobs:
             -q \
             --junitxml=backend-test-results.xml \
             --cov=backend \
-            --cov-report xml:coverage.xml
+            --cov-report=xml:coverage.xml
 
       - name: Upload backend coverage report
         if: always()
