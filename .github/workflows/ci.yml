@@ -2,13 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - prod
+    branches: [ main, prod ]
   pull_request:
-    branches:
-      - main
-      - prod
+    branches: [ main, prod ]
 
 jobs:
   backend:
@@ -38,17 +34,17 @@ jobs:
           poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
-        working-directory: ./backend
         env:
           POETRY_CACHE_DIR: ~/.cache/pypoetry
+          PYTHONPATH: backend
         run: |
-          poetry run pytest \
+          poetry run pytest backend/tests \
             --maxfail=1 \
             --disable-warnings \
             -q \
-            --junitxml=tests/backend-test-results.xml \
-            --cov=main \
-            --cov-report xml:coverage.xml
+            --junitxml=backend/tests/backend-test-results.xml \
+            --cov=backend.main \
+            --cov-report xml:backend/coverage.xml
 
       - name: Upload backend coverage report
         if: always()
@@ -57,8 +53,6 @@ jobs:
           name: backend-coverage
           path: backend/coverage.xml
 
-
-  # --- Node frontend tests & build -----------------------------
   frontend:
     name: ⚛️ Frontend (React) Tests & Build
     runs-on: ubuntu-latest
