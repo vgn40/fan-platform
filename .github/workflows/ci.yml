@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out kode"
+        uses: actions/checkout@v3
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: "Frontend: Install & CI"
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run lint
+          npm test -- --watchAll=false
+          npm run build
+
+      - name: "Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: "Backend: Install & CI"
+        working-directory: ./backend
+        run: |
+          pip install -r requirements.txt
+          flake8 .
+          pytest --maxfail=1 --disable-warnings -q
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: lint-test-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Stub for deployment"
+        run: echo "Her indsætter du deploy-kommandoer når du er klar"
