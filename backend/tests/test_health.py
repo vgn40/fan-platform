@@ -1,7 +1,7 @@
 # backend/tests/test_health.py
 import pytest
 from fastapi.testclient import TestClient
-from backend.main import app    # <–– her
+from main import app
 
 @pytest.fixture
 def client():
