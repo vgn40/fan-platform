@@ -13,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache Poetry & Pip
       - uses: actions/cache@v3
         with:
           path: |
@@ -34,9 +33,9 @@ jobs:
           poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
-        working-directory: backend
+        working-directory: backend            # ← HERE
         run: |
-          poetry run pytest tests \
+          poetry run pytest \
             --maxfail=1 \
             --disable-warnings \
             -q \
@@ -57,7 +56,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache npm
       - uses: actions/cache@v3
         with:
           path: ~/.npm
