@@ -1,10 +1,12 @@
+// src/pages/MatchesPage.tsx
 import { useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 
-// runtime import:
+// hook‐funtionen
 import { useMatchesInfinite } from "../hooks/useMatchesInfinite"
-// type‐only import:
-import type { Match } from "../hooks/useMatchesInfinite"
+// kun typen – hent den fra /src/types.ts
+import type { Match } from "../types"
+
 export default function MatchesPage() {
   const [status, setStatus] = useState<"upcoming" | "past">("upcoming")
   const {
@@ -16,9 +18,8 @@ export default function MatchesPage() {
     isFetchingNextPage,
   } = useMatchesInfinite({ status })
 
-  // Flat pages ud til ét array af Match
+  // flad alle pages ud til ét array af Match
   const matches: Match[] = data?.pages.flat() ?? []
-
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (!loadMoreRef.current) return
