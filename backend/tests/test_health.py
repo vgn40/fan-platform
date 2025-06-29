@@ -5,9 +5,9 @@ from backend.main import app
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+     return TestClient(app)
 
 def test_health_endpoint(client):
-    resp = client.get("/health")
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+     resp = client.get("/health")
+     assert resp.status_code == 200
+     assert resp.json() == {"status": "ok"}
