@@ -1,28 +1,39 @@
+// src/hooks/useUpdateMatch.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface UpdatePayload {
-  id: number;
-  home: string;
-  away: string;
-  veo_id?: string | null;
-}
+export type MatchUpdateInput = {
+  home:       string;
+  away:       string;
+  date:       string; // Tilføjet dato for kamp 
+  veo_id?:    string;
+  logo_home?: string;
+  logo_away?: string;
+  id?:        string; // vi tilføjer id her eller i mutate-kaldet
+};
 
 export function useUpdateMatch() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: UpdatePayload) => {
-      const res = await fetch(`${import.meta.env.VITE_API}/matches/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(await res.text());
+    mutationFn: async (data: MatchUpdateInput) => {
+      const { id, ...payload } = data;
+      const res = await fetch(
+        `${import.meta.env.VITE_API}/matches/${id}`,
+        {
+          method:  "PUT",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(payload),
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Ukendt fejl ved opdatering af kamp");
+      }
       return res.json();
     },
-    onSuccess: () => {
-      // opdatér både liste- og detail-cache
-      qc.invalidateQueries({ queryKey: ["matches"] });
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["match", variables.id] });
     },
   });
 }

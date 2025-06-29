@@ -1,122 +1,126 @@
-// -----------------------------------------------------------------------------
-//  NewMatchPage.tsx
-//  Opret ny kamp – med react-hook-form validering
-// -----------------------------------------------------------------------------
+// frontend/src/pages/NewMatchPage.tsx
+import React from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, Link } from "react-router-dom";
-
-type Inputs = {
-  home: string;
-  away: string;
-  veo_id?: string;
-};
+import { Link, useNavigate } from "react-router-dom";
+import { useCreateMatch } from "../hooks/useCreateMatch";
+// ⚠️ “import type” so TS knows this is erased at runtime
+import type { MatchInput } from "../hooks/useCreateMatch";
 
 export default function NewMatchPage() {
+  const navigate = useNavigate();
+  const createMatch = useCreateMatch();
+
+  // include “date” in our form type:
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
-    reset,
-  } = useForm<Inputs>();
+  } = useForm<MatchInput>();
 
-  const navigate = useNavigate();
-
-  // ---------------------------------------------------------------------------
-  //  Submit handler
-  // ---------------------------------------------------------------------------
-  async function onSubmit(data: Inputs) {
-    try {
-      await fetch(`${import.meta.env.VITE_API}/matches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      reset();
-      navigate("/matches");
-    } catch (err) {
-      alert(`Kunne ikke gemme: ${err}`);
-    }
+  async function onSubmit(data: MatchInput) {
+    // data.date will be like "2025-06-29T14:30"
+    createMatch.mutate(data, {
+      onSuccess() {
+        navigate("/matches");
+      },
+    });
   }
 
-  // Bruges til “home ≠ away” validering
-  const homeValue = watch("home");
-
-  // ---------------------------------------------------------------------------
-  //  Render
-  // ---------------------------------------------------------------------------
   return (
-    <main className="mx-auto max-w-md p-6 space-y-8">
-      <Link to="/matches" className="text-blue-400 hover:underline">
-        ← Tilbage
+    <main className="mx-auto max-w-md p-6 space-y-6">
+      <Link to="/matches" className="text-[var(--color-primary)] hover:underline">
+        ← Tilbage til oversigt
       </Link>
 
-      <h1 className="text-3xl font-bold">Opret ny kamp</h1>
+      <h1 className="text-2xl font-bold">Opret ny kamp</h1>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 bg-zinc-800 rounded-xl p-6 shadow"
+        className="space-y-4 bg-zinc-800 p-6 rounded-xl shadow"
       >
-        {/* HOME -------------------------------------------------------------- */}
-        <div className="space-y-2">
-          <label className="block font-medium">Hjemmehold *</label>
+        {/* ─── Dato & tid ─── */}
+        <div>
+          <label className="block mb-1">Dato og tid *</label>
           <input
-            {...register("home", {
-              required: "Hjemmehold er påkrævet",
-              validate: (v) =>
-                v !== watch("away") || "Hjemme- og udehold må ikke være ens",
-            })}
-            placeholder="B52 Aalborg"
-            className="w-full rounded-md bg-zinc-900 px-3 py-2"
+            type="datetime-local"
+            {...register("date", { required: "Dato og tid er påkrævet" })}
+            className="w-full rounded-md bg-zinc-900 px-3 py-2 text-white"
+          />
+          {errors.date && (
+            <p className="text-red-400 text-sm">{errors.date.message}</p>
+          )}
+        </div>
+
+        {/* ─── Hjemmehold ─── */}
+        <div>
+          <label className="block mb-1">Hjemmehold *</label>
+          <input
+            {...register("home", { required: "Hjemmehold er påkrævet" })}
+            className="w-full rounded-md bg-zinc-900 px-3 py-2 text-white"
           />
           {errors.home && (
-            <p className="text-sm text-red-400">{errors.home.message}</p>
+            <p className="text-red-400 text-sm">{errors.home.message}</p>
           )}
         </div>
 
-        {/* AWAY -------------------------------------------------------------- */}
-        <div className="space-y-2">
-          <label className="block font-medium">Udehold *</label>
+        {/* ─── Udehold ─── */}
+        <div>
+          <label className="block mb-1">Udehold *</label>
           <input
-            {...register("away", {
-              required: "Udehold er påkrævet",
-              validate: (v) =>
-                v !== homeValue || "Hjemme- og udehold må ikke være ens",
-            })}
-            placeholder="AC Pandas"
-            className="w-full rounded-md bg-zinc-900 px-3 py-2"
+            {...register("away", { required: "Udehold er påkrævet" })}
+            className="w-full rounded-md bg-zinc-900 px-3 py-2 text-white"
           />
           {errors.away && (
-            <p className="text-sm text-red-400">{errors.away.message}</p>
+            <p className="text-red-400 text-sm">{errors.away.message}</p>
           )}
         </div>
 
-        {/* VEO ID ------------------------------------------------------------ */}
-        <div className="space-y-2">
-          <label className="block font-medium">Veo-ID (valgfri)</label>
+        {/* ─── Veo-ID ─── */}
+        <div>
+          <label className="block mb-1">Veo-ID (valgfri)</label>
           <input
             {...register("veo_id", {
-              pattern: {
-                value: /^\d*$/,
-                message: "Veo-ID skal være et tal",
-              },
+              pattern: { value: /^\d*$/, message: "Veo-ID skal være tal" },
             })}
-            placeholder="fx 37453"
-            className="w-full rounded-md bg-zinc-900 px-3 py-2"
+            className="w-full rounded-md bg-zinc-900 px-3 py-2 text-white"
           />
           {errors.veo_id && (
-            <p className="text-sm text-red-400">{errors.veo_id.message}</p>
+            <p className="text-red-400 text-sm">{errors.veo_id.message}</p>
           )}
         </div>
 
-        {/* SUBMIT ------------------------------------------------------------ */}
+        {/* ─── Logo hjemme ─── */}
+        <div>
+          <label className="block mb-1">Logo hjemme (URL, valgfri)</label>
+          <input
+            {...register("logo_home")}
+            className="w-full rounded-md bg-zinc-900 px-3 py-2 text-white"
+          />
+        </div>
+
+        {/* ─── Logo ude ─── */}
+        <div>
+          <label className="block mb-1">Logo ude (URL, valgfri)</label>
+          <input
+            {...register("logo_away")}
+            className="w-full rounded-md bg-zinc-900 px-3 py-2 text-white"
+          />
+        </div>
+
+        {/* ─── Submit ─── */}
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-md bg-blue-600 py-2 font-semibold text-white shadow hover:bg-blue-500 disabled:opacity-50"
+          disabled={isSubmitting || createMatch.isLoading}
+          className="w-full bg-[var(--color-primary)] hover:bg-indigo-600 text-white py-2 rounded-md disabled:opacity-50"
         >
-          {isSubmitting ? "Gemmer…" : "Gem kamp"}
+          {isSubmitting || createMatch.isLoading ? "Opretter…" : "Opret kamp"}
         </button>
+
+        {createMatch.isError && (
+          <p className="text-red-500 text-sm mt-2">
+            {String(createMatch.error)}
+          </p>
+        )}
       </form>
     </main>
   );
